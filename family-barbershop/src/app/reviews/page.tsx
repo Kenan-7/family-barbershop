@@ -165,9 +165,6 @@ export default function ReviewsPage() {
                 See our work
               </ButtonLink>
             </div>
-            <p className="mt-4 text-xs text-black/45">
-              Tip: add your Google Reviews URL in <span className="text-black/70">`src/content/business.ts`</span>.
-            </p>
           </div>
         </Container>
       </section>
