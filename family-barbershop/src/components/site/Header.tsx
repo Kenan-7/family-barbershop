@@ -3,32 +3,42 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
+import { Calendar, Menu, Phone, X } from "lucide-react";
 import { business } from "@/content/business";
 import { cn } from "@/lib/cn";
-import { Container } from "@/components/site/Container";
 import { navItems } from "@/components/site/nav";
+import { useFocusTrap } from "@/components/chatbot/useFocusTrap";
+
+const BRAND_TAGLINE = "SINCE 2025";
+const NAV_TRANSITION =
+  "duration-[240ms] ease-out motion-reduce:transition-none motion-reduce:transform-none";
 
 function NavLink({
   href,
   label,
   onNavigate,
+  mobile = false,
 }: {
   href: string;
   label: string;
   onNavigate?: () => void;
+  mobile?: boolean;
 }) {
   const pathname = usePathname();
   const active = pathname === href;
+
   return (
     <Link
       href={href}
       onClick={onNavigate}
       className={cn(
-        "rounded-full border px-2.5 py-2 text-[11px] font-semibold uppercase tracking-[0.12em] transition duration-300 xl:px-3 xl:text-[12px]",
-        active
-          ? "border-brand/30 bg-brand/12 text-brand-2 shadow-[0_0_24px_rgba(197,157,95,0.12)]"
-          : "border-transparent text-white/74 hover:border-white/10 hover:bg-white/[0.05] hover:text-white",
+        "nav-link group relative inline-flex shrink-0 items-center whitespace-nowrap font-medium uppercase transition-[color,transform] focus-visible:outline-none focus-visible:ring-0",
+        NAV_TRANSITION,
+        mobile
+          ? "min-h-11 w-full justify-start px-1 py-3 text-[10px] tracking-[0.14em]"
+          : "text-[11px] tracking-[0.12em]",
+        active ? "nav-link--active text-brand-2" : "text-white/55",
       )}
       aria-current={active ? "page" : undefined}
     >
@@ -37,189 +47,242 @@ function NavLink({
   );
 }
 
-function ActionPill({
-  href,
-  label,
-  icon,
-}: {
-  href: string;
-  label: string;
-  icon: "calendar" | "phone";
-}) {
-  const Icon = icon === "calendar" ? CalendarIcon : PhoneIcon;
-  const isBooking = icon === "calendar";
+function BrandLogo() {
   return (
-    <a
-      href={href}
-      target={href.startsWith("http") ? "_blank" : undefined}
-      rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-      className={cn(
-        "group inline-flex h-10 items-center rounded-full border pl-2 pr-3.5 text-[12px] font-semibold transition duration-300 hover:-translate-y-0.5 xl:h-11 xl:pl-2.5 xl:pr-4 xl:text-[13px]",
-        isBooking
-          ? "border-brand/45 bg-gradient-to-r from-[#ae7c2d] via-[#d8b56b] to-[#f3ddb0] text-black shadow-[0_16px_40px_rgba(197,157,95,0.22)] hover:shadow-[0_20px_46px_rgba(197,157,95,0.30)]"
-          : "border-white/12 bg-white/[0.05] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_12px_34px_rgba(0,0,0,0.20)] backdrop-blur-md hover:border-brand/20 hover:bg-white/[0.08]",
-      )}
-    >
-      <span
-        className={cn(
-          "mr-2 inline-flex h-7 w-7 items-center justify-center rounded-full xl:mr-2.5 xl:h-8 xl:w-8",
-          isBooking
-            ? "bg-black/10 text-black shadow-[0_10px_24px_rgba(0,0,0,0.10)]"
-            : "bg-brand/15 text-brand-2 shadow-[0_10px_24px_rgba(197,157,95,0.12)]",
-        )}
-      >
-        <Icon className="h-4 w-4 xl:h-4.5 xl:w-4.5" />
+    <span className="brand-logo-wrap relative inline-flex shrink-0">
+      <span aria-hidden="true" className="brand-logo-glow pointer-events-none absolute inset-0 -z-10 scale-110 rounded-full bg-brand/25 blur-2xl" />
+      <span className="brand-logo-ring relative inline-flex shrink-0 rounded-full">
+        <span className="brand-logo relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-[rgba(6,6,6,0.95)]">
+          <Image
+            src="/logo.png"
+            alt={`${business.name} logo`}
+            width={88}
+            height={88}
+            priority
+            sizes="(max-width: 1180px) 56px, (max-width: 1280px) 76px, 86px"
+            className="h-full w-full shrink-0 object-contain"
+          />
+        </span>
       </span>
-      <span className="whitespace-nowrap">{label}</span>
-    </a>
+    </span>
   );
 }
 
-function PhoneIcon({ className }: { className?: string }) {
+function BrandText() {
   return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M4.5 5.5c0-.8.7-1.5 1.5-1.5h2.1c.7 0 1.3.5 1.5 1.2l.7 2.4c.2.7-.1 1.5-.7 1.9l-1.1.8c.9 1.7 2.4 3.2 4.1 4.1l.8-1.1c.4-.6 1.2-.9 1.9-.7l2.4.7c.7.2 1.2.8 1.2 1.5V18c0 .8-.7 1.5-1.5 1.5h-.7C11.8 19.5 4.5 12.2 4.5 5.5Z"
-      />
-    </svg>
+    <span className="brand-copy">
+      <span className="brand-title">{business.name}</span>
+      <span className="brand-subtitle">{BRAND_TAGLINE}</span>
+    </span>
   );
 }
 
-function CalendarIcon({ className }: { className?: string }) {
+function BrandBlock() {
   return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
+    <Link
+      href="/"
+      aria-label={`${business.name} — ${BRAND_TAGLINE}`}
+      className="brand-block group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(8,8,8,0.95)]"
     >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M8 2v3M16 2v3M4.5 9h15M6.5 5h11A2 2 0 0 1 19.5 7v13A2 2 0 0 1 17.5 22h-11A2 2 0 0 1 4.5 20V7A2 2 0 0 1 6.5 5Z"
-      />
-    </svg>
+      <BrandLogo />
+      <BrandText />
+    </Link>
+  );
+}
+
+function NavbarActions({ bookingHref }: { bookingHref: string }) {
+  return (
+    <div className="navbar-actions">
+      <a
+        href={business.phoneHref}
+        className="call-now-button nav-cta-call inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-full border border-white/10 bg-[rgba(255,255,255,0.04)] px-3.5 text-[12px] font-semibold text-white/88 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(8,8,8,0.95)]"
+      >
+        <span aria-hidden="true" className="nav-cta-call-sweep" />
+        <Phone
+          className="nav-cta-phone-icon relative z-[1] h-4 w-4 shrink-0 text-brand-2/90"
+          strokeWidth={1.75}
+          aria-hidden="true"
+        />
+        <span className="relative z-[1] whitespace-nowrap">{business.hero.secondaryCtaLabel}</span>
+      </a>
+      <a
+        href={bookingHref}
+        target={bookingHref.startsWith("http") ? "_blank" : undefined}
+        rel={bookingHref.startsWith("http") ? "noopener noreferrer" : undefined}
+        className="book-appointment-button nav-cta-book inline-flex h-12 shrink-0 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#a87428] via-[#d4b066] to-[#edd9a8] px-[22px] text-[13px] font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.32),0_8px_22px_rgba(197,157,95,0.18)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(8,8,8,0.95)]"
+      >
+        <span aria-hidden="true" className="nav-cta-book-sweep" />
+        <Calendar
+          className="nav-cta-calendar-icon relative z-[1] h-4 w-4 shrink-0 text-white"
+          strokeWidth={1.75}
+          aria-hidden="true"
+        />
+        <span className="relative z-[1] whitespace-nowrap">{business.hero.primaryCtaLabel}</span>
+      </a>
+    </div>
   );
 }
 
 export function Header() {
-  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const mobilePanelRef = useFocusTrap(menuOpen);
   const bookingHref = business.links.bookingUrl || "/contact";
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  const prevPathnameRef = useRef(pathname);
+
+  useEffect(() => {
+    if (prevPathnameRef.current === pathname) return;
+    prevPathnameRef.current = pathname;
+    startTransition(() => setMenuOpen(false));
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+        menuButtonRef.current?.focus();
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [menuOpen]);
+
   return (
-    <header className="sticky top-0 z-50 border-b border-white/8 bg-[rgba(4,4,5,0.72)] backdrop-blur-xl">
+    <header
+      className={cn(
+        "site-header relative sticky top-0 z-50 flex h-[124px] w-full items-center overflow-x-hidden border-b border-brand/[0.12] bg-[rgba(8,8,8,0.72)] shadow-[0_8px_32px_rgba(0,0,0,0.2)] backdrop-blur-[20px] transition-[background-color,box-shadow,border-color,backdrop-filter] duration-[240ms] ease-out",
+        scrolled && "site-header--scrolled",
+      )}
+    >
       <a
         href="#main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-black"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 z-[60] rounded-full bg-brand px-4 py-2 text-sm font-semibold text-black"
       >
         Skip to content
       </a>
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-brand/70 to-transparent" />
-        <div className="absolute left-[12%] top-0 h-20 w-32 bg-brand/12 blur-3xl" aria-hidden="true" />
-        <div className="absolute right-[10%] top-0 h-20 w-32 bg-white/6 blur-3xl" aria-hidden="true" />
-        <Container className="grid h-[108px] grid-cols-[minmax(0,300px)_1fr_auto] items-center gap-2 px-4 sm:px-5 lg:max-w-[1280px] lg:px-4 xl:grid-cols-[minmax(0,330px)_1fr_auto]">
-          <div className="flex items-center gap-3 justify-self-start">
-            <Link href="/" className="group inline-flex items-center gap-3">
-              <span className="relative inline-flex rounded-full bg-gradient-to-br from-brand/90 via-brand-2 to-white/35 p-[2px] shadow-[0_22px_44px_rgba(197,157,95,0.20)]">
-                <span className="relative inline-flex h-[100px] w-[100px] items-center justify-center overflow-hidden rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.12),rgba(0,0,0,0.95))]">
-                  <Image
-                    src="/logo.png"
-                    alt={`${business.name} logo`}
-                    width={114}
-                    height={114}
-                    quality={100}
-                    sizes="114px"
-                    className="h-[128px] w-[128px] object-contain transition duration-500 group-hover:scale-[1.04]"
-                    priority
-                  />
-                </span>
-              </span>
-              <div className="min-w-max leading-[0.95]">
-                <div className="bg-gradient-to-r from-brand via-brand-2 to-white bg-clip-text text-[16px] font-semibold tracking-[0.02em] text-transparent sm:text-[23px] xl:text-[26px]">
-                  Family
-                </div>
-                <div className="mt-0.5 whitespace-nowrap bg-gradient-to-r from-brand via-brand-2 to-white bg-clip-text text-[16px] font-semibold tracking-[0.02em] text-transparent sm:text-[23px] xl:text-[26px]">
-                  Barber Shop
-                </div>
-              </div>
-            </Link>
-          </div>
 
-          <div className="hidden min-w-0 justify-center lg:flex lg:justify-self-center">
-            <nav
-              className="inline-flex max-w-full scale-[0.92] items-center gap-0.5 rounded-full border border-white/10 bg-white/[0.04] px-1 py-1.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_16px_40px_rgba(0,0,0,0.24)] backdrop-blur-xl xl:scale-100"
-              aria-label="Primary"
-            >
-              {navItems.map((i) => (
-                <NavLink key={i.href} href={i.href} label={i.label} />
-              ))}
-            </nav>
-          </div>
+      <div className="navbar-container">
+        <div className="brand-section">
+          <BrandBlock />
+        </div>
 
-          <div className="hidden justify-self-end lg:block">
-            <div className="flex translate-x-5 items-center gap-3 xl:translate-x-20">
-              <ActionPill href={bookingHref} label="Book Appointment" icon="calendar" />
-              <ActionPill href={business.phoneHref} label="Call Now" icon="phone" />
-            </div>
-          </div>
+        <nav className="desktop-navigation" aria-label="Primary">
+          {navItems.map((item) => (
+            <NavLink key={item.href} href={item.href} label={item.label} />
+          ))}
+        </nav>
 
-          <button
-            type="button"
-            className="inline-flex h-11 w-11 items-center justify-center justify-self-end rounded-full border border-white/12 bg-white/[0.05] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] backdrop-blur-md hover:border-brand/20 hover:bg-white/[0.09] lg:hidden"
-            aria-label={open ? "Close menu" : "Open menu"}
-            aria-expanded={open}
-            onClick={() => setOpen((v) => !v)}
+        <div className="navbar-end">
+          <NavbarActions bookingHref={bookingHref} />
+
+          <div className="mobile-menu-button">
+          <a
+            href={business.phoneHref}
+            aria-label={business.hero.secondaryCtaLabel}
+            className={cn(
+              "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-[rgba(255,255,255,0.04)] text-brand-2/90 backdrop-blur-md transition-[border-color,transform] hover:-translate-y-px hover:border-brand/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(8,8,8,0.95)]",
+              NAV_TRANSITION,
+            )}
           >
-            <svg
-              viewBox="0 0 24 24"
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-            >
-              {open ? (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 6l12 12M18 6L6 18" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
+            <Phone className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+          </a>
+          <a
+            href={bookingHref}
+            target={bookingHref.startsWith("http") ? "_blank" : undefined}
+            rel={bookingHref.startsWith("http") ? "noopener noreferrer" : undefined}
+            aria-label={business.hero.primaryCtaLabel}
+            className={cn(
+              "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-[#a87428] via-[#d4b066] to-[#edd9a8] text-white shadow-[0_8px_22px_rgba(197,157,95,0.18)] transition-[transform,box-shadow] hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(8,8,8,0.95)]",
+              NAV_TRANSITION,
+            )}
+          >
+            <Calendar className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+          </a>
+          <button
+            ref={menuButtonRef}
+            type="button"
+            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={menuOpen}
+            aria-controls="mobile-nav-panel"
+            onClick={() => setMenuOpen((open) => !open)}
+            className={cn(
+              "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 bg-[rgba(255,255,255,0.04)] text-white/80 backdrop-blur-md transition-[border-color,transform] hover:-translate-y-px hover:border-brand/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50 focus-visible:ring-offset-2 focus-visible:ring-offset-[rgba(8,8,8,0.95)]",
+              NAV_TRANSITION,
+            )}
+          >
+            {menuOpen ? (
+              <X className="h-5 w-5" aria-hidden="true" />
+            ) : (
+              <Menu className="h-5 w-5" aria-hidden="true" />
+            )}
           </button>
-        </Container>
+        </div>
+        </div>
       </div>
 
-      {open ? (
-        <div className="border-t border-white/10 bg-[rgba(5,5,6,0.94)] backdrop-blur-xl lg:hidden">
-          <Container className="py-4">
-            <div className="flex flex-col gap-2 rounded-[28px] border border-white/10 bg-white/[0.04] p-3 shadow-[0_18px_44px_rgba(0,0,0,0.24)]">
-              {navItems.map((i) => (
+      <div
+        aria-hidden="true"
+        className="site-header-border pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-brand/30 to-transparent transition-opacity duration-[240ms] ease-out"
+      />
+
+      {menuOpen ? (
+        <div
+          ref={mobilePanelRef}
+          id="mobile-nav-panel"
+          className="mobile-nav-panel absolute inset-x-0 top-full z-[55] border-t border-brand/10 bg-[rgba(8,8,8,0.96)] backdrop-blur-[20px]"
+        >
+          <div className="mx-auto w-[calc(100%-32px)] max-w-[1440px] py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <nav aria-label="Mobile primary" className="flex w-full flex-col gap-0.5">
+              {navItems.map((item) => (
                 <NavLink
-                  key={i.href}
-                  href={i.href}
-                  label={i.label}
-                  onNavigate={() => setOpen(false)}
+                  key={item.href}
+                  href={item.href}
+                  label={item.label}
+                  onNavigate={() => setMenuOpen(false)}
+                  mobile
                 />
               ))}
+            </nav>
+            <div className="mt-4 flex flex-col gap-3 sm:hidden">
+              <a
+                href={business.phoneHref}
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full border border-white/10 bg-[rgba(255,255,255,0.04)] text-sm font-semibold text-white/90 backdrop-blur-md"
+              >
+                <Phone className="h-4 w-4 text-brand-2/90" strokeWidth={1.75} aria-hidden="true" />
+                {business.hero.secondaryCtaLabel}
+              </a>
+              <a
+                href={bookingHref}
+                target={bookingHref.startsWith("http") ? "_blank" : undefined}
+                rel={bookingHref.startsWith("http") ? "noopener noreferrer" : undefined}
+                className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#a87428] via-[#d4b066] to-[#edd9a8] text-sm font-semibold text-white"
+              >
+                <Calendar className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+                {business.hero.primaryCtaLabel}
+              </a>
             </div>
-            <div className="mt-4 flex flex-col gap-3">
-              <ActionPill href={bookingHref} label="Book Appointment" icon="calendar" />
-              <ActionPill href={business.phoneHref} label="Call Now" icon="phone" />
-            </div>
-          </Container>
+          </div>
         </div>
       ) : null}
     </header>
   );
 }
-

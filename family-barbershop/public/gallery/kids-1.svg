@@ -1,12 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0b0b0d"/>
+      <stop offset="0" stop-color="#0A0A0A"/>
       <stop offset="1" stop-color="#131318"/>
     </linearGradient>
     <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#c59d5f"/>
-      <stop offset="1" stop-color="#e6c88f"/>
+      <stop offset="0" stop-color="#D4AF37"/>
+      <stop offset="1" stop-color="#E8C547"/>
     </linearGradient>
   </defs>
   <rect width="1200" height="800" fill="url(#bg)"/>
@@ -20,7 +20,7 @@
 
   <g transform="translate(170,360)">
     <rect x="0" y="0" width="860" height="340" rx="34" fill="rgba(255,255,255,0.05)"/>
-    <circle cx="180" cy="170" r="96" fill="rgba(197,157,95,0.18)"/>
+    <circle cx="180" cy="170" r="96" fill="rgba(212,175,55,0.18)"/>
     <circle cx="320" cy="170" r="72" fill="rgba(255,255,255,0.06)"/>
     <rect x="440" y="88" width="360" height="18" rx="9" fill="url(#accent)" opacity="0.85"/>
     <rect x="440" y="134" width="300" height="14" rx="7" fill="rgba(255,255,255,0.14)"/>

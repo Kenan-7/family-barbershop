@@ -5,6 +5,7 @@ import "./globals.css";
 import { business } from "@/content/business";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
+import { ChatbotLoader } from "@/components/chatbot/ChatbotLoader";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -89,6 +90,7 @@ export default function RootLayout({
           </main>
           <Footer />
         </div>
+        <ChatbotLoader />
       </body>
     </html>
   );
