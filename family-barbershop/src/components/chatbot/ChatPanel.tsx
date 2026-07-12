@@ -42,7 +42,7 @@ export function ChatPanel({
           <motion.button
             type="button"
             aria-label="Close assistant"
-            className="chatbot-backdrop fixed inset-0 z-[68] bg-black/35 backdrop-blur-[2px] sm:bg-black/20"
+            className="chatbot-backdrop fixed inset-0 z-[68] bg-black/55 sm:bg-black/35"
             initial={reduceMotion ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={reduceMotion ? undefined : { opacity: 0 }}
@@ -61,8 +61,8 @@ export function ChatPanel({
             exit={reduceMotion ? undefined : { opacity: 0, scale: 0.98, y: 10 }}
             transition={reduceMotion ? { duration: 0.01 } : PANEL_SPRING}
           >
-            <div className="chatbot-panel-noise pointer-events-none absolute inset-0" aria-hidden="true" />
-            <div className="chatbot-panel-glow pointer-events-none absolute inset-0" aria-hidden="true" />
+            <div className="chatbot-panel-noise pointer-events-none absolute inset-0 perf-hide-on-coarse" aria-hidden="true" />
+            <div className="chatbot-panel-glow pointer-events-none absolute inset-0 perf-hide-on-coarse" aria-hidden="true" />
 
             <ChatHeader onClose={onClose} onMinimize={onMinimize} />
 

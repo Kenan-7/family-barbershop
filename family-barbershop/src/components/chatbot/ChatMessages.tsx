@@ -5,6 +5,8 @@ import { ChatMessageBubble } from "@/components/chatbot/ChatMessage";
 import { ChatTypingIndicator } from "@/components/chatbot/ChatTypingIndicator";
 import type { ChatMessage } from "@/lib/chatbot/types";
 
+const MAX_RENDERED_MESSAGES = 40;
+
 export function ChatMessages({
   messages,
   isTyping,
@@ -13,6 +15,10 @@ export function ChatMessages({
   isTyping: boolean;
 }) {
   const endRef = useRef<HTMLDivElement>(null);
+  const visibleMessages =
+    messages.length > MAX_RENDERED_MESSAGES
+      ? messages.slice(-MAX_RENDERED_MESSAGES)
+      : messages;
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -20,7 +26,7 @@ export function ChatMessages({
 
   return (
     <div className="chatbot-messages flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-5">
-      {messages.map((message) => (
+      {visibleMessages.map((message) => (
         <ChatMessageBubble key={message.id} message={message} />
       ))}
       {isTyping ? <ChatTypingIndicator /> : null}

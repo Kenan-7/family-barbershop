@@ -6,6 +6,7 @@ import { business } from "@/content/business";
 import { Header } from "@/components/site/Header";
 import { Footer } from "@/components/site/Footer";
 import { ChatbotLoader } from "@/components/chatbot/ChatbotLoader";
+import { MobilePerformanceBoot } from "@/components/site/MobilePerformanceBoot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,9 +44,11 @@ export const metadata: Metadata = {
     images: [{ url: "/logo.png" }],
   },
   icons: {
-    icon: [{ url: "/logo.png", type: "image/png" }],
-    shortcut: [{ url: "/logo.png", type: "image/png" }],
-    apple: [{ url: "/logo.png", type: "image/png" }],
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
   },
   robots: {
     index: true,
@@ -78,6 +81,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} site-bg min-h-full antialiased text-white`}
       >
+        <MobilePerformanceBoot />
         <Script
           id="ld-local-business"
           type="application/ld+json"

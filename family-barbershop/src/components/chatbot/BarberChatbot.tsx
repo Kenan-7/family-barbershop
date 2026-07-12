@@ -5,16 +5,21 @@ import { ChatLauncher } from "@/components/chatbot/ChatLauncher";
 import { ChatPanel } from "@/components/chatbot/ChatPanel";
 import { useChat } from "@/components/chatbot/useChat";
 import { chatbotConfig } from "@/lib/chatbot/config";
+import { readMobilePerfFlags, useCoarsePointer, useMobilePerfFlags } from "@/lib/mobilePerformance";
 
-const ACTIVITY_EVENTS = ["mousemove", "mousedown", "keydown", "scroll", "touchstart"] as const;
+const DESKTOP_ACTIVITY_EVENTS = ["mousemove", "mousedown", "keydown", "touchstart"] as const;
+const TOUCH_ACTIVITY_EVENTS = ["mousedown", "keydown", "touchstart"] as const;
 
 export function BarberChatbot() {
+  const coarsePointer = useCoarsePointer();
+  const perfFlags = useMobilePerfFlags();
   const [open, setOpen] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
   const { messages, isTyping, sendMessage, hasConversation, hydrated } = useChat();
   const inactivityTimerRef = useRef<number | null>(null);
 
   const handleClose = useCallback(() => setOpen(false), []);
+
   const handleMinimize = useCallback(() => setOpen(false), []);
   const handleToggle = useCallback(() => {
     setShowTooltip(false);
@@ -44,6 +49,7 @@ export function BarberChatbot() {
 
   useEffect(() => {
     if (!hydrated) return;
+    if (readMobilePerfFlags().disableChatbot) return;
 
     resetInactivityTimer();
 
@@ -52,30 +58,37 @@ export function BarberChatbot() {
       resetInactivityTimer();
     }
 
-    for (const eventName of ACTIVITY_EVENTS) {
+    const events = coarsePointer ? TOUCH_ACTIVITY_EVENTS : DESKTOP_ACTIVITY_EVENTS;
+    for (const eventName of events) {
       window.addEventListener(eventName, onActivity, { passive: true });
     }
 
     return () => {
       if (inactivityTimerRef.current) window.clearTimeout(inactivityTimerRef.current);
-      for (const eventName of ACTIVITY_EVENTS) {
+      for (const eventName of events) {
         window.removeEventListener(eventName, onActivity);
       }
     };
-  }, [hydrated, open, resetInactivityTimer]);
+  }, [hydrated, open, resetInactivityTimer, coarsePointer]);
 
   useEffect(() => {
     if (!open) return;
 
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") handleClose();
     }
 
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [open]);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [open, handleClose]);
 
-  if (!hydrated) return null;
+  if (!hydrated || perfFlags.disableChatbot) return null;
 
   return (
     <>
@@ -85,17 +98,19 @@ export function BarberChatbot() {
         showTooltip={showTooltip}
         onDismissTooltip={dismissTooltipForever}
       />
-      <div id="family-barber-chat-panel">
-        <ChatPanel
-          open={open}
-          messages={messages}
-          isTyping={isTyping}
-          hasConversation={hasConversation}
-          onClose={handleClose}
-          onMinimize={handleMinimize}
-          onSend={sendMessage}
-        />
-      </div>
+      {open ? (
+        <div id="family-barber-chat-panel">
+          <ChatPanel
+            open={open}
+            messages={messages}
+            isTyping={isTyping}
+            hasConversation={hasConversation}
+            onClose={handleClose}
+            onMinimize={handleMinimize}
+            onSend={sendMessage}
+          />
+        </div>
+      ) : null}
     </>
   );
 }

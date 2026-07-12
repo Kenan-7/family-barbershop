@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { GALLERY_CATEGORIES, type GalleryFilterCategory } from "@/content/gallery";
+import { debounce } from "@/lib/mobilePerformance";
 import { cn } from "@/lib/cn";
 
 export function GalleryFilters({
@@ -32,8 +33,9 @@ export function GalleryFilters({
 
   useEffect(() => {
     updateIndicator();
-    window.addEventListener("resize", updateIndicator);
-    return () => window.removeEventListener("resize", updateIndicator);
+    const onResize = debounce(updateIndicator, 200);
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, [updateIndicator]);
 
   return (

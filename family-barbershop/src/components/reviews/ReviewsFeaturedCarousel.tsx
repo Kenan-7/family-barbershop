@@ -12,6 +12,7 @@ import {
   GoogleLogo,
   ReviewsSectionTitle,
 } from "@/components/reviews/reviews-shared";
+import { debounce } from "@/lib/mobilePerformance";
 import { cn } from "@/lib/cn";
 
 const AUTOPLAY_MS = 6000;
@@ -94,14 +95,39 @@ export function ReviewsFeaturedCarousel() {
   );
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [isInView, setIsInView] = useState(false);
   const [slideWidth, setSlideWidth] = useState(340);
 
   useEffect(() => {
-    const update = () =>
-      setSlideWidth(window.innerWidth < 640 ? 268 : window.innerWidth < 1024 ? 310 : 370);
+    const node = containerRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsInView(entry.isIntersecting),
+      { threshold: 0.12 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const node = containerRef.current;
+    if (!node) return;
+
+    const update = () => {
+      const width = node.clientWidth;
+      setSlideWidth(width < 640 ? 268 : width < 1024 ? 310 : 370);
+    };
+
     update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
+    const onResize = debounce(update, 200);
+    const observer = new ResizeObserver(update);
+    observer.observe(node);
+    window.addEventListener("resize", onResize);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", onResize);
+    };
   }, []);
 
   const goTo = useCallback(
@@ -116,12 +142,12 @@ export function ReviewsFeaturedCarousel() {
   const goPrev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo]);
 
   useEffect(() => {
-    if (isPaused || reduceMotion || reviews.length <= 1) return;
+    if (isPaused || !isInView || reduceMotion || reviews.length <= 1) return;
     const timer = window.setInterval(() => {
       setActiveIndex((current) => (current + 1) % reviews.length);
     }, AUTOPLAY_MS);
     return () => window.clearInterval(timer);
-  }, [isPaused, reduceMotion, reviews.length]);
+  }, [isPaused, isInView, reduceMotion, reviews.length]);
 
   useEffect(() => {
     const node = containerRef.current;

@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useReducedMotion } from "framer-motion";
+import { useAnimatedNumber } from "@/lib/motion";
+import { useCoarsePointer } from "@/lib/mobilePerformance";
 import { BadgeCheck, ChevronLeft, ChevronRight, Star } from "lucide-react";
 import { business } from "@/content/business";
 import type { Testimonial } from "@/content/business";
@@ -13,7 +15,6 @@ import { Stars } from "@/components/ui/Stars";
 import { cn } from "@/lib/cn";
 
 const AUTOPLAY_MS = 6000;
-const COUNT_DURATION_MS = 1400;
 
 function GoogleLogo({ className }: { className?: string }) {
   return (
@@ -61,39 +62,6 @@ function useScrollReveal<T extends HTMLElement>(threshold = 0.15) {
   }, [threshold]);
 
   return { ref, visible };
-}
-
-function useAnimatedNumber(
-  target: number,
-  enabled: boolean,
-  decimals = 0,
-  duration = COUNT_DURATION_MS,
-) {
-  const [value, setValue] = useState(0);
-
-  useEffect(() => {
-    if (!enabled) return;
-
-    let frame = 0;
-    let start: number | null = null;
-
-    const step = (timestamp: number) => {
-      if (start === null) start = timestamp;
-      const progress = Math.min((timestamp - start) / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const next = eased * target;
-      setValue(decimals > 0 ? Number(next.toFixed(decimals)) : Math.round(next));
-
-      if (progress < 1) {
-        frame = requestAnimationFrame(step);
-      }
-    };
-
-    frame = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(frame);
-  }, [target, enabled, decimals, duration]);
-
-  return value;
 }
 
 function getInitials(name: string) {
@@ -230,8 +198,11 @@ export function ReviewsShowcase() {
   const { googleReviews, testimonials } = business;
   const reviews = testimonials;
   const { ref, visible } = useScrollReveal<HTMLDivElement>();
+  const coarsePointer = useCoarsePointer();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
+  const [carouselInView, setCarouselInView] = useState(false);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   const goTo = useCallback(
     (index: number) => {
@@ -245,14 +216,26 @@ export function ReviewsShowcase() {
   const goPrev = useCallback(() => goTo(activeIndex - 1), [activeIndex, goTo]);
 
   useEffect(() => {
-    if (isPaused || reviews.length <= 1) return;
+    const node = carouselRef.current;
+    if (!node) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setCarouselInView(entry.isIntersecting),
+      { threshold: 0.15 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (isPaused || !carouselInView || coarsePointer || reviews.length <= 1) return;
 
     const timer = window.setInterval(() => {
       setActiveIndex((current) => (current + 1) % reviews.length);
     }, AUTOPLAY_MS);
 
     return () => window.clearInterval(timer);
-  }, [isPaused, reviews.length]);
+  }, [isPaused, carouselInView, coarsePointer, reviews.length]);
 
   return (
     <section className="section-glow relative overflow-hidden border-y border-white/10">
@@ -333,6 +316,7 @@ export function ReviewsShowcase() {
             <TrustStats visible={visible} />
 
             <div
+              ref={carouselRef}
               className="relative"
               onMouseEnter={() => setIsPaused(true)}
               onMouseLeave={() => setIsPaused(false)}

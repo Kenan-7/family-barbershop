@@ -4,6 +4,7 @@ import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion
 import { useRef } from "react";
 import type { GalleryItem } from "@/content/gallery";
 import { GalleryProgressiveImage } from "@/components/gallery/GalleryProgressiveImage";
+import { useDisableDecorativeMotion } from "@/lib/mobilePerformance";
 
 export function GalleryCinematicBreak({
   item,
@@ -13,12 +14,17 @@ export function GalleryCinematicBreak({
   onOpen: () => void;
 }) {
   const reduceMotion = useReducedMotion();
+  const disableParallax = useDisableDecorativeMotion() || reduceMotion;
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({
     target: ref,
     offset: ["start end", "end start"],
   });
-  const imageY = useTransform(scrollYProgress, [0, 1], [reduceMotion ? 0 : 18, reduceMotion ? 0 : -18]);
+  const imageY = useTransform(
+    scrollYProgress,
+    [0, 1],
+    [disableParallax ? 0 : 18, disableParallax ? 0 : -18],
+  );
 
   return (
     <section

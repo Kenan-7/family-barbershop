@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useCoarsePointer, usePrefersReducedMotion } from "@/lib/mobilePerformance";
 
 export const LUXURY_EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -82,15 +83,24 @@ export function useAnimatedNumber(
   decimals = 0,
   duration = 1400,
 ) {
+  const coarsePointer = useCoarsePointer();
+  const reduceMotion = usePrefersReducedMotion();
+  const shouldAnimate = enabled && !coarsePointer && !reduceMotion;
+  const staticValue = decimals > 0 ? Number(target.toFixed(decimals)) : Math.round(target);
   const [value, setValue] = useState(0);
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!shouldAnimate) return;
 
     let frame = 0;
     let start: number | null = null;
 
     const step = (timestamp: number) => {
+      if (document.documentElement.classList.contains("perf-zooming")) {
+        frame = requestAnimationFrame(step);
+        return;
+      }
+
       if (start === null) start = timestamp;
       const progress = Math.min((timestamp - start) / duration, 1);
       const eased = 1 - Math.pow(1 - progress, 3);
@@ -102,7 +112,7 @@ export function useAnimatedNumber(
 
     frame = requestAnimationFrame(step);
     return () => cancelAnimationFrame(frame);
-  }, [target, enabled, decimals, duration]);
+  }, [target, shouldAnimate, decimals, duration]);
 
-  return value;
+  return shouldAnimate ? value : staticValue;
 }

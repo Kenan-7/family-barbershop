@@ -8,6 +8,7 @@ import { business } from "@/content/business";
 import { Container } from "@/components/site/Container";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { LUXURY_EASE, fadeUp, staggerContainer } from "@/lib/motion";
+import { useDisableDecorativeMotion } from "@/lib/mobilePerformance";
 
 const badgeItem = {
   hidden: { opacity: 0, y: 12 },
@@ -18,6 +19,7 @@ export function ServicesHero() {
   const { hero } = business.servicesPage;
   const sectionRef = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
+  const disableParallax = useDisableDecorativeMotion() || reduceMotion;
   const bookingHref = business.links.bookingUrl || "/contact";
   const bookingTarget = business.links.bookingUrl ? "_blank" : undefined;
 
@@ -29,7 +31,7 @@ export function ServicesHero() {
   const imageY = useTransform(
     scrollYProgress,
     [0, 1],
-    reduceMotion ? ["0%", "0%"] : ["0%", "10%"],
+    reduceMotion || disableParallax ? ["0%", "0%"] : ["0%", "10%"],
   );
 
   return (

@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { chatbotConfig } from "@/lib/chatbot/config";
+import { useDisableDecorativeMotion } from "@/lib/mobilePerformance";
 import { cn } from "@/lib/cn";
 
 export function ChatLauncher({
@@ -17,11 +18,13 @@ export function ChatLauncher({
   onDismissTooltip: () => void;
 }) {
   const reduceMotion = useReducedMotion();
+  const disableDecorativeMotion = useDisableDecorativeMotion();
+  const motionOff = reduceMotion || disableDecorativeMotion;
   const [ripple, setRipple] = useState<{ x: number; y: number; id: number } | null>(null);
 
   const handleClick = useCallback(
     (event: React.MouseEvent<HTMLButtonElement>) => {
-      if (reduceMotion) {
+      if (motionOff) {
         onToggle();
         return;
       }
@@ -34,7 +37,7 @@ export function ChatLauncher({
       });
       onToggle();
     },
-    [onToggle, reduceMotion],
+    [onToggle, motionOff],
   );
 
   return (
@@ -43,9 +46,9 @@ export function ChatLauncher({
         {showTooltip && !open ? (
           <motion.div
             key="tooltip"
-            initial={reduceMotion ? false : { opacity: 0, y: 6, scale: 0.98 }}
+            initial={motionOff ? false : { opacity: 0, y: 6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={reduceMotion ? undefined : { opacity: 0, y: 4, scale: 0.98 }}
+            exit={motionOff ? undefined : { opacity: 0, y: 4, scale: 0.98 }}
             transition={{ type: "spring", stiffness: 400, damping: 32 }}
             className="chatbot-tooltip mb-3"
             role="status"
@@ -72,7 +75,7 @@ export function ChatLauncher({
           open ? "pointer-events-none opacity-0" : "opacity-100",
         )}
         animate={
-          reduceMotion
+          motionOff
             ? undefined
             : {
                 boxShadow: [
@@ -83,10 +86,10 @@ export function ChatLauncher({
               }
         }
         transition={
-          reduceMotion ? undefined : { duration: 10, repeat: Infinity, ease: "easeInOut" }
+          motionOff ? undefined : { duration: 10, repeat: Infinity, ease: "easeInOut" }
         }
-        whileHover={reduceMotion ? undefined : { y: -2 }}
-        whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+        whileHover={motionOff ? undefined : { y: -2 }}
+        whileTap={motionOff ? undefined : { scale: 0.98 }}
       >
         {ripple ? (
           <motion.span

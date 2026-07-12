@@ -1,12 +1,17 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { business } from "@/content/business";
 import { Container } from "@/components/site/Container";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { TrustIndicatorIcon } from "@/components/home/TrustIndicatorIcon";
 import { getShopStatus } from "@/lib/shopStatus";
+import {
+  useCoarsePointer,
+  useMobilePerfFlags,
+  usePrefersReducedMotion,
+} from "@/lib/mobilePerformance";
 import { cn } from "@/lib/cn";
 
 const { hero } = business;
@@ -96,24 +101,18 @@ function ScrollIndicator() {
 }
 
 export function HomeHero() {
-  const [motionPreference, setMotionPreference] = useState<"unknown" | "reduce" | "motion">(
-    "unknown",
-  );
+  const coarsePointer = useCoarsePointer();
+  const reduceMotion = usePrefersReducedMotion();
+  const perfFlags = useMobilePerfFlags();
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaStageRef = useRef<HTMLDivElement>(null);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
+  const [inViewport, setInViewport] = useState(true);
+  const [pageVisible, setPageVisible] = useState(true);
 
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-
-    const updateMotionPreference = () => {
-      setMotionPreference(mediaQuery.matches ? "reduce" : "motion");
-    };
-
-    updateMotionPreference();
-    mediaQuery.addEventListener("change", updateMotionPreference);
-
-    return () => mediaQuery.removeEventListener("change", updateMotionPreference);
-  }, []);
+  const preferPoster =
+    coarsePointer || reduceMotion || perfFlags.disableHeroVideo || perfFlags.disableDecorativeMotion;
 
   const handleVideoReady = useCallback(() => {
     setIsVideoReady(true);
@@ -123,37 +122,80 @@ export function HomeHero() {
     setVideoFailed(true);
   }, []);
 
-  const reduceMotion = motionPreference === "reduce";
-  const preferenceKnown = motionPreference !== "unknown";
-  const useVideo = preferenceKnown && !reduceMotion && !videoFailed;
-  const showPlaceholder = !preferenceKnown || (useVideo && !isVideoReady);
+  const useVideo = !preferPoster && !videoFailed;
+  const showPlaceholder = useVideo && !isVideoReady;
   const showVideo = useVideo && isVideoReady;
-  const showFallback = preferenceKnown && (reduceMotion || videoFailed);
+  const showFallback = preferPoster || videoFailed;
+  const mediaMotionClass = showVideo && !coarsePointer ? "home-hero-media-drift" : "";
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !useVideo) return;
+
+    if (!inViewport || !pageVisible) {
+      video.pause();
+      return;
+    }
+
+    const playPromise = video.play();
+    if (playPromise) {
+      playPromise.catch(() => {
+        /* Autoplay blocked — poster layer remains visible. */
+      });
+    }
+  }, [inViewport, pageVisible, useVideo, isVideoReady]);
+
+  useEffect(() => {
+    const stage = mediaStageRef.current;
+    if (!stage) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => setInViewport(entry.isIntersecting),
+      { threshold: 0.08 },
+    );
+    observer.observe(stage);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      setPageVisible(document.visibilityState === "visible");
+    };
+
+    onVisibilityChange();
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, []);
 
   const bookingHref = business.links.bookingUrl || "/contact";
   const bookingTarget = business.links.bookingUrl ? "_blank" : undefined;
-  const mediaMotionClass = showVideo ? "home-hero-media-drift" : "";
 
   return (
     <section
       aria-labelledby="home-hero-heading"
-      className="relative isolate z-10 min-h-[100dvh] overflow-x-hidden border-b border-white/10"
+      className="relative z-10 min-h-[100dvh] overflow-x-hidden border-b border-white/10"
     >
-      <div className="home-hero-media-stage absolute inset-0 overflow-hidden" aria-hidden="true">
+      <div
+        ref={mediaStageRef}
+        className="home-hero-media-stage absolute inset-0 overflow-hidden"
+        aria-hidden="true"
+      >
         <div
           className={cn(
             "home-hero-placeholder absolute inset-0",
-            showPlaceholder ? "opacity-100" : "pointer-events-none opacity-0",
+            showPlaceholder || showFallback ? "opacity-100" : "pointer-events-none opacity-0",
           )}
         />
 
         {useVideo ? (
           <video
+            ref={videoRef}
             autoPlay
             muted
             loop
             playsInline
-            preload="auto"
+            preload="metadata"
+            poster={hero.posterSrc}
             aria-hidden="true"
             onCanPlay={handleVideoReady}
             onLoadedData={handleVideoReady}
@@ -173,9 +215,9 @@ export function HomeHero() {
             src={hero.posterSrc}
             alt=""
             fill
-            priority={reduceMotion}
-            fetchPriority={reduceMotion ? "high" : "auto"}
-            sizes="100vw"
+            priority
+            fetchPriority="high"
+            sizes="(max-width: 768px) 100vw, 100vw"
             className={cn(
               "home-hero-media home-hero-media-fade object-cover object-center",
               mediaMotionClass,

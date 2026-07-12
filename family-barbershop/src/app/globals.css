@@ -5345,3 +5345,245 @@ iframe {
     transform: none;
   }
 }
+
+/* ── Mobile / touch performance mode (iOS pinch-zoom stability) ── */
+
+@media (hover: none) and (pointer: coarse) {
+  .site-bg::before {
+    position: absolute;
+    opacity: 0.22;
+  }
+
+  .site-header,
+  .site-header--scrolled {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(8, 8, 8, 0.94) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22) !important;
+  }
+
+  .mobile-nav-panel {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(8, 8, 8, 0.98) !important;
+  }
+
+  .brand-logo-glow {
+    display: none;
+  }
+
+  .home-hero-media {
+    will-change: auto;
+    transform: scale(1.02);
+    animation: none !important;
+  }
+
+  .home-hero-media-stage {
+    filter: none;
+  }
+
+  .home-hero-headline-glow {
+    filter: none;
+    opacity: 0.7;
+  }
+
+  .home-hero-cta-glass,
+  .home-hero-cta-outline,
+  .home-hero-trust-item {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(0, 0, 0, 0.42) !important;
+  }
+
+  .home-hero-cta {
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.48),
+      0 10px 24px rgb(197 157 95 / 0.22) !important;
+  }
+
+  .home-hero-vignette {
+    box-shadow: inset 0 0 36px rgb(0 0 0 / 0.2);
+  }
+
+  .home-hero-scroll-line,
+  .home-hero-scroll-chevron,
+  .animate-hero-scroll-cue {
+    animation: none !important;
+  }
+
+  .shop-status-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: rgba(10, 10, 10, 0.92) !important;
+    animation: none !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.38) !important;
+  }
+
+  .atmosphere-noise,
+  .atmosphere-shimmer,
+  .atmosphere-particle,
+  .atmosphere--lite .atmosphere-warm,
+  .atmosphere--lite .atmosphere-accent {
+    display: none !important;
+  }
+
+  .atmosphere-radial,
+  .atmosphere-spotlight {
+    animation: none !important;
+    opacity: 0.75 !important;
+    transform: none !important;
+  }
+
+  .premium-closing-glass,
+  .premium-closing-glow,
+  .premium-closing-particle {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    animation: none !important;
+  }
+
+  .premium-closing-glass {
+    background: rgba(12, 12, 12, 0.94) !important;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.34) !important;
+  }
+
+  .chatbot-tooltip,
+  .chatbot-launcher,
+  .chatbot-panel,
+  .chatbot-backdrop {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .chatbot-launcher {
+    background: rgba(10, 10, 10, 0.94) !important;
+    will-change: auto;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.38) !important;
+  }
+
+  .chatbot-panel {
+    background: rgba(10, 10, 10, 0.98) !important;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42) !important;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .chatbot-panel-noise,
+  .chatbot-panel-glow,
+  .perf-hide-on-coarse {
+    display: none !important;
+  }
+
+  .review-showcase-slide {
+    will-change: auto;
+    filter: none !important;
+  }
+
+  .review-showcase-slide-inactive {
+    filter: none !important;
+  }
+
+  .review-showcase-visual-glow {
+    display: none;
+  }
+
+  .product-coverflow-scene-glow,
+  .product-coverflow-ambient {
+    filter: none !important;
+    display: none;
+  }
+
+  [class*="backdrop-blur"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .animate-float-gentle,
+  .animate-neon-pulse,
+  .animate-neon-drift,
+  .nav-cta-book,
+  .reviews-marquee-track,
+  .reviews-hero-drift,
+  .reviews-dust,
+  .gallery-ken-burns,
+  .contact-hero-glow-gold,
+  .contact-hero-glow-charcoal,
+  .contact-hero-particle {
+    animation: none !important;
+  }
+
+  * {
+    will-change: auto !important;
+  }
+}
+
+html.perf-coarse .site-bg::before {
+  position: absolute;
+  opacity: 0.22;
+}
+
+html.perf-coarse [class*="backdrop-blur"],
+html.perf-no-blur [class*="backdrop-blur"],
+html.perf-coarse .site-header,
+html.perf-coarse .site-header--scrolled,
+html.perf-coarse .chatbot-panel,
+html.perf-coarse .chatbot-launcher,
+html.perf-coarse .chatbot-tooltip,
+html.perf-coarse .shop-status-card,
+html.perf-coarse .home-hero-cta-glass,
+html.perf-coarse .home-hero-cta-outline,
+html.perf-coarse .home-hero-trust-item,
+html.perf-coarse .premium-closing-glass {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.perf-coarse .home-hero-media-drift,
+html.perf-no-motion .home-hero-media-drift,
+html.perf-coarse .shop-status-card,
+html.perf-no-motion .atmosphere-particle,
+html.perf-no-motion .atmosphere-noise,
+html.perf-no-motion .atmosphere-shimmer,
+html.perf-no-motion .nav-cta-book,
+html.perf-no-motion .chatbot-pulse-dot {
+  animation: none !important;
+}
+
+html.perf-no-hero-video .home-hero-media {
+  display: none !important;
+}
+
+html.perf-no-chatbot .chatbot-launcher-wrap,
+html.perf-no-chatbot #family-barber-chat-panel {
+  display: none !important;
+}
+
+html.perf-zooming *,
+html.perf-zooming *::before,
+html.perf-zooming *::after {
+  animation-play-state: paused !important;
+}
+
+html.perf-zooming [class*="backdrop-blur"],
+html.perf-zooming .site-header,
+html.perf-zooming .site-header--scrolled,
+html.perf-zooming .chatbot-panel,
+html.perf-zooming .chatbot-backdrop,
+html.perf-zooming .shop-status-card,
+html.perf-zooming .premium-closing-glass,
+html.perf-zooming .home-hero-cta-glass {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.perf-zooming .home-hero-headline-glow,
+html.perf-zooming .product-coverflow-scene-glow,
+html.perf-zooming .review-showcase-visual-glow {
+  filter: none !important;
+}
+
+html.perf-zooming .home-hero-media {
+  animation: none !important;
+  will-change: auto !important;
+}
+

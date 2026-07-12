@@ -7,19 +7,25 @@ import { useRef } from "react";
 import { business } from "@/content/business";
 import { Container } from "@/components/site/Container";
 import { LUXURY_EASE, fadeUp, staggerContainer } from "@/lib/motion";
+import { useDisableDecorativeMotion } from "@/lib/mobilePerformance";
 
 export function AboutStory() {
   const { aboutStory } = business;
   const sectionRef = useRef<HTMLElement>(null);
   const imageRef = useRef<HTMLDivElement>(null);
   const reduceMotion = useReducedMotion();
+  const disableParallax = useDisableDecorativeMotion() || reduceMotion;
 
   const { scrollYProgress } = useScroll({
     target: imageRef,
     offset: ["start end", "end start"],
   });
 
-  const imageScale = useTransform(scrollYProgress, [0, 1], reduceMotion ? [1, 1] : [1.04, 1]);
+  const imageScale = useTransform(
+    scrollYProgress,
+    [0, 1],
+    disableParallax ? [1, 1] : [1.04, 1],
+  );
 
   return (
     <section
