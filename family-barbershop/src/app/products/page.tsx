@@ -10,6 +10,9 @@ export const metadata = {
   title: "Products",
   description:
     "Professional grooming products used and recommended by the barbers at Family Barber Shop in Roswell, GA.",
+  alternates: {
+    canonical: "/products",
+  },
 };
 
 export default function ProductsPage() {

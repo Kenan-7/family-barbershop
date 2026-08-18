@@ -26,6 +26,9 @@ export const metadata: Metadata = {
   },
   description:
     "A clean, family-friendly barbershop for men, kids, and families. View services, prices, hours, and book an appointment.",
+  alternates: {
+    canonical: "/",
+  },
   applicationName: business.name,
   keywords: [
     "barbershop",
@@ -87,6 +90,19 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessJsonLd()) }}
         />
+        <Script
+          id="google-ads-gtag-src"
+          src="https://www.googletagmanager.com/gtag/js?id=AW-11503729585"
+          strategy="afterInteractive"
+        />
+        <Script id="google-ads-gtag-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'AW-11503729585');
+          `}
+        </Script>
         <div className="flex min-h-screen flex-col">
           <Header />
           <main id="main" className="flex-1">

@@ -11,6 +11,9 @@ export const metadata = {
   title: "Services",
   description:
     "Premium barbering services at Family Barber Shop — haircuts, skin fades, beard trims, and more in Roswell, GA.",
+  alternates: {
+    canonical: "/services",
+  },
 };
 
 export default function ServicesPage() {

@@ -11,6 +11,9 @@ export const metadata = {
   title: "About",
   description:
     "Discover the story behind Family Barber Shop — premium barbering, family-friendly service, and a welcoming community in Roswell, GA.",
+  alternates: {
+    canonical: "/about",
+  },
 };
 
 export default function AboutPage() {

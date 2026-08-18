@@ -4,6 +4,9 @@ export const metadata = {
   title: "Contact / Booking",
   description:
     "Book an appointment, call, or send a message to Family Barber Shop in Roswell, GA. Walk-ins welcome.",
+  alternates: {
+    canonical: "/contact",
+  },
 };
 
 export default function ContactPage() {

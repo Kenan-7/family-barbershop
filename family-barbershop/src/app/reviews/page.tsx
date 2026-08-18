@@ -4,6 +4,9 @@ export const metadata = {
   title: "Reviews",
   description:
     "Read verified Google reviews from Family Barber Shop customers in Roswell, GA. 5.0 rating with 278+ reviews.",
+  alternates: {
+    canonical: "/reviews",
+  },
 };
 
 export default function ReviewsPage() {

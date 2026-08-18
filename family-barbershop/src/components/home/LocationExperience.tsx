@@ -96,7 +96,12 @@ function ShopStatusCard() {
 }
 
 function BusinessHoursList() {
-  const todayLabel = DAY_LABELS[new Date().getDay()];
+  const [todayLabel, setTodayLabel] = useState(() => DAY_LABELS[new Date().getDay()]);
+
+  useEffect(() => {
+    const update = () => setTodayLabel(DAY_LABELS[new Date().getDay()]);
+    update();
+  }, []);
 
   return (
     <div className="location-hours-card rounded-[1.35rem] border border-white/[0.08] bg-gradient-to-b from-[#1a1a1a] to-[#101010] p-6">
