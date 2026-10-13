@@ -1,25 +1,18 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
 import { Clock, MapPin, Navigation, Phone } from "lucide-react";
 import { business } from "@/content/business";
 import { getFullAddress } from "@/content/contact";
 import { ButtonLink } from "@/components/ui/ButtonLink";
-import { getShopStatus } from "@/lib/shopStatus";
+import { useShopStatus } from "@/lib/useShopStatus";
 import { cn } from "@/lib/cn";
 
 export function ContactSummaryCard() {
-  const [status, setStatus] = useState(() => getShopStatus(new Date()));
+  const status = useShopStatus();
+  const isOpen = status?.isOpen ?? false;
   const bookingHref = business.links.bookingUrl || "/contact#form";
   const fullAddress = getFullAddress();
-
-  useEffect(() => {
-    const update = () => setStatus(getShopStatus(new Date()));
-    update();
-    const timer = window.setInterval(update, 60_000);
-    return () => window.clearInterval(timer);
-  }, []);
 
   return (
     <div className="contact-summary-card contact-premium-card">
@@ -39,7 +32,8 @@ export function ContactSummaryCard() {
         <span
           className={cn(
             "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.12em]",
-            status.isOpen
+            !status && "invisible",
+            isOpen
               ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-200/90"
               : "border-amber-400/20 bg-amber-500/10 text-amber-100/85",
           )}
@@ -47,13 +41,13 @@ export function ContactSummaryCard() {
           <span
             className={cn(
               "contact-status-dot h-1.5 w-1.5 rounded-full",
-              status.isOpen ? "bg-emerald-300/90 contact-status-dot--open" : "bg-amber-300/80",
+              isOpen ? "bg-emerald-300/90 contact-status-dot--open" : "bg-amber-300/80",
             )}
             aria-hidden="true"
           />
-          {status.isOpen ? "Open Now" : "Closed"}
+          {isOpen ? "Open Now" : "Closed"}
         </span>
-        <span className="text-xs text-white/45">{status.statusDetail}</span>
+        <span className="text-xs text-white/45">{status?.statusDetail ?? "\u00a0"}</span>
       </div>
 
       <div className="mt-5 space-y-0 border-t border-white/[0.08] pt-5 text-sm">
@@ -62,7 +56,13 @@ export function ContactSummaryCard() {
           <div>
             <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-white/40">Today</p>
             <p className="mt-1 text-white/85">
-              {status.todayLabel}: {status.hoursText}
+              {status ? (
+                <>
+                  {status.todayLabel}: {status.hoursText}
+                </>
+              ) : (
+                "\u00a0"
+              )}
             </p>
           </div>
         </div>

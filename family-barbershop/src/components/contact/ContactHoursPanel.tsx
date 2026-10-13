@@ -1,23 +1,16 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { ChevronDown, Clock } from "lucide-react";
 import { business } from "@/content/business";
 import { contactPage } from "@/content/contact";
-import { getShopStatus } from "@/lib/shopStatus";
+import { useShopStatus } from "@/lib/useShopStatus";
 import { cn } from "@/lib/cn";
 
 export function ContactHoursPanel() {
   const panelId = useId();
   const [expanded, setExpanded] = useState(false);
-  const [status, setStatus] = useState(() => getShopStatus(new Date()));
-
-  useEffect(() => {
-    const update = () => setStatus(getShopStatus(new Date()));
-    update();
-    const timer = window.setInterval(update, 60_000);
-    return () => window.clearInterval(timer);
-  }, []);
+  const status = useShopStatus();
 
   return (
     <div className="contact-glass-card contact-premium-card contact-hours-card">
@@ -29,16 +22,22 @@ export function ContactHoursPanel() {
           <div>
             <p className="text-sm font-semibold text-white">{contactPage.hours.title}</p>
             <p className="mt-1.5 text-sm text-white/55">
-              <span
-                className={cn(
-                  "font-medium",
-                  status.isOpen ? "text-emerald-200/85" : "text-amber-100/80",
-                )}
-              >
-                {status.isOpen ? "Open now" : "Closed now"}
-              </span>
-              {" · "}
-              Today ({status.todayLabel}) {status.hoursText}
+              {status ? (
+                <>
+                  <span
+                    className={cn(
+                      "font-medium",
+                      status.isOpen ? "text-emerald-200/85" : "text-amber-100/80",
+                    )}
+                  >
+                    {status.isOpen ? "Open now" : "Closed now"}
+                  </span>
+                  {" · "}
+                  Today ({status.todayLabel}) {status.hoursText}
+                </>
+              ) : (
+                "\u00a0"
+              )}
             </p>
           </div>
         </div>
@@ -74,7 +73,7 @@ export function ContactHoursPanel() {
         <div className="overflow-hidden">
           <dl className="mt-4 space-y-1 border-t border-white/[0.08] pt-4 text-sm">
             {business.hours.map((entry) => {
-              const isToday = entry.label === status.todayLabel;
+              const isToday = entry.label === status?.todayLabel;
               return (
                 <div
                   key={entry.label}

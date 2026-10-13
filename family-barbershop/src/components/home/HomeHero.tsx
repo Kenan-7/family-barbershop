@@ -1,12 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { business } from "@/content/business";
 import { Container } from "@/components/site/Container";
 import { ButtonLink } from "@/components/ui/ButtonLink";
 import { TrustIndicatorIcon } from "@/components/home/TrustIndicatorIcon";
-import { getShopStatus } from "@/lib/shopStatus";
+import { useShopStatus } from "@/lib/useShopStatus";
 import {
   useCoarsePointer,
   useMobilePerfFlags,
@@ -17,7 +17,8 @@ import { cn } from "@/lib/cn";
 const { hero } = business;
 
 function HeroInfoCard({ className }: { className?: string }) {
-  const status = useMemo(() => getShopStatus(new Date()), []);
+  const status = useShopStatus();
+  const isOpen = status?.isOpen ?? false;
 
   return (
     <aside
@@ -31,7 +32,8 @@ function HeroInfoCard({ className }: { className?: string }) {
         <div
           className={cn(
             "inline-flex items-center gap-2 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-[0.02em]",
-            status.isOpen
+            !status && "invisible",
+            isOpen
               ? "border-[rgba(110,190,150,0.22)] bg-[rgba(52,120,88,0.16)] text-[#9fd4b8]"
               : "border-[rgba(180,90,100,0.28)] bg-[rgba(100,38,48,0.22)] text-[#d9a8ae]",
           )}
@@ -39,20 +41,20 @@ function HeroInfoCard({ className }: { className?: string }) {
           <span
             className={cn(
               "h-1.5 w-1.5 shrink-0 rounded-full",
-              status.isOpen
+              isOpen
                 ? "bg-[#6db896] shadow-[0_0_8px_rgba(109,184,150,0.45)]"
                 : "bg-[#a85c68] shadow-[0_0_8px_rgba(168,92,104,0.4)]",
             )}
             aria-hidden="true"
           />
-          {status.isOpen ? "Open Now" : "Closed Now"}
+          {isOpen ? "Open Now" : "Closed Now"}
         </div>
       </div>
 
       <dl className="mt-4 space-y-3 text-sm">
         <div>
           <dt className="text-white/50">Today&apos;s Hours</dt>
-          <dd className="mt-1 font-medium text-white">{status.hoursText}</dd>
+          <dd className="mt-1 font-medium text-white">{status?.hoursText ?? "\u00a0"}</dd>
         </div>
         <div>
           <dt className="text-white/50">Address</dt>
